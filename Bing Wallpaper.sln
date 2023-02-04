@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+VisualStudioVersion = 16.0.31004.235
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bing Wallpaper", "Bing Wallpaper.csproj", "{F95081DF-37B8-4840-84B5-3A951114B71E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bing Wallpaper", "Bing Wallpaper.csproj", "{96C11CF8-7AD5-4864-A3BF-D8C51A892D20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F95081DF-37B8-4840-84B5-3A951114B71E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F95081DF-37B8-4840-84B5-3A951114B71E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F95081DF-37B8-4840-84B5-3A951114B71E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F95081DF-37B8-4840-84B5-3A951114B71E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96C11CF8-7AD5-4864-A3BF-D8C51A892D20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96C11CF8-7AD5-4864-A3BF-D8C51A892D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96C11CF8-7AD5-4864-A3BF-D8C51A892D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96C11CF8-7AD5-4864-A3BF-D8C51A892D20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7DE898BC-C04B-4C55-A876-325C249B3E50}
+		SolutionGuid = {941B6B50-C6DE-4E7A-92EB-32CF696DA26C}
 	EndGlobalSection
 EndGlobal

@@ -1,247 +1,118 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Bing_Wallpaper
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private const string BaseAddress = "https://cn.bing.com";
+        private const string Url = "/HPImageArchive.aspx?n=1&mkt=zh-CN";
+        private static readonly HttpClient httpClient = new();
+        private static readonly Stopwatch stopwatch = new();
+
+        public static async Task Main()
         {
-            string name = "Bing Wallpaper";
-            Console.Title = name;
-            string url = "https://bing.com/HPImageArchive.aspx?n=1";
-            string path = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\\Bing Wallpaper";
-            Directory.CreateDirectory(path);
-            if (path == "\\Pictures\\Bing Wallpaper")
+            string address = "";
+            string fileName = "";
+            string SaveFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            if (!Directory.Exists(SaveFolder))
             {
-                path = ".\\";
+                SaveFolder = Environment.CurrentDirectory;
             }
-            Console.WriteLine(path);
-            string temp = $"{Environment.GetEnvironmentVariable("Temp")}\\{name}.xml";
-            if (temp == $"\\{name}.xml")
+            SaveFolder += "\\Bing Wallpaper\\";
+            Console.Title = "Bing Wallpaper";
+            Console.Write("保存位置：");
+            Console.WriteLine(SaveFolder);
+            if (!Directory.CreateDirectory(SaveFolder).Exists)
             {
-                temp = ".\\";
+                Console.Write("创建目录失败，点击任意键退出..");
+                _ = Console.ReadKey(true);
+                return;
             }
             try
             {
-            string[] Files = Directory.GetFiles(path);
-            string LastFile = Files[Files.LongLength - 1];
-            if (LastFile.Substring(LastFile.Length - 4, 4) == ".jpg")
-            {
-                SetWallpaper(name, LastFile);
-            }
-            }
-            catch
-            {
-                //Do Nothing;
-            }
-            if (DownLoadFile(url, temp, (double Maximum, double Value, double Percent) =>
-            {
-                string Value_Unit = "Bytes";
-                string Maximum_Unit = "Bytes";
-                if (Value >= 1024)
+                httpClient.BaseAddress = new Uri(BaseAddress);
+                httpClient.DefaultRequestHeaders.Connection.Add("keep-alive");
+
+                Console.Write($"建立连接：{BaseAddress}..");
+                stopwatch.Start();
+                HttpResponseMessage httpResponseMessage = await httpClient.SendAsync(new HttpRequestMessage
                 {
-                    Value /= 1024;
-                    Value_Unit = "Kilobytes";
-                    if (Value >= 1024)
-                    {
-                        Value /= 1024;
-                        Value_Unit = "Megabytes";
-                        if (Value >= 1024)
-                        {
-                            Value /= 1024;
-                            Value_Unit = "Gigabyte";//不要问我为什么要写这么多单位
-                        }
-                    }
+                    Method = new HttpMethod("HEAD"),
+                    RequestUri = httpClient.BaseAddress,
+                });
+                stopwatch.Stop();
+                Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                Console.Write($"下    载：{Url}..");
+                stopwatch.Start();
+                httpResponseMessage = await httpClient.GetAsync(Url);
+                stopwatch.Stop();
+                Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                Console.Write("分    析：Content..");
+                stopwatch.Start();
+                string html = await httpResponseMessage.Content.ReadAsStringAsync();
+                html = html.Replace("&amp;", "&");
+                foreach (string s in from string s in html.Split(new string[] { "<startdate>", "</startdate>" }, StringSplitOptions.None)
+                                     where s != "" && !s.Contains('<') && !s.Contains('>')
+                                     select s)
+                {
+                    fileName  = $"{s}.jpg";
                 }
-                if (Maximum >= 1024)
+                foreach (string s in from string s in html.Split(new string[] { "<urlBase>", "</urlBase>" }, StringSplitOptions.None)
+                                     where s != "" && !s.Contains('<') && !s.Contains('>')
+                                     select s)
                 {
-                    Maximum /= 1024;
-                    Maximum_Unit = "Kilobytes";
-                    if (Maximum >= 1024)
-                    {
-                        Maximum /= 1024;
-                        Maximum_Unit = "Megabytes";
-                        if (Maximum >= 1024)
-                        {
-                            Maximum /= 1024;
-                            Maximum_Unit = "Gigabyte";
-                        }
-                    }
+                    address = $"{s}_UHD.jpg";
                 }
-                Console.Title = $"{name} - Downloading - {Value} {Value_Unit} of {Maximum} {Maximum_Unit} - {Percent}%";
-            }))
+                stopwatch.Stop();
+                Console.WriteLine($"OK ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+
+                Console.Write($"下    载：{address}..");
+                stopwatch.Start();
+                httpResponseMessage = await httpClient.GetAsync(address);
+                stopwatch.Stop();
+                Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                httpClient.Dispose();
+
+                Console.Write($"保    存：{fileName}..");
+                stopwatch.Start();
+                byte[] wallpaperBinary = await httpResponseMessage.Content.ReadAsByteArrayAsync();
+                File.WriteAllBytes($"{SaveFolder}{fileName}", wallpaperBinary);
+                stopwatch.Stop();
+                Console.WriteLine($"{wallpaperBinary.Length:000,000} Bytes ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+
+                Console.Write($"设置壁纸：{fileName}..");
+                stopwatch.Start();
+                [DllImport("user32.dll", EntryPoint = "SystemParametersInfoA")]
+                static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+                int stateCode = SystemParametersInfo(20, 0, $"{SaveFolder}{fileName}", 1);
+                stopwatch.Stop();
+                Console.WriteLine($"{stateCode} ({stopwatch.ElapsedMilliseconds} ms)");
+                stopwatch.Reset();
+            }
+            catch (Exception e)
             {
-                Console.Title = $"{name} - Download - Done";
-                string xml = File.ReadAllText(temp);
-                url = $"https://bing.com{GetXMLItemValue(xml, "url")}";
-                url = url[0..url.IndexOf("&")];
-                path += $"\\{GetXMLItemValue(xml, "enddate")}.jpg";
-                if (DownLoadFile(url, path, (double Maximum, double Value, double Percent) =>
-                {
-                    string Value_Unit = "Bytes";
-                    string Maximum_Unit = "Bytes";
-                    if (Value >= 1024)
-                    {
-                        Value /= 1024;
-                        Value_Unit = "Kilobytes";
-                        if (Value >= 1024)
-                        {
-                            Value /= 1024;
-                            Value_Unit = "Megabytes";
-                            if (Value >= 1024)
-                            {
-                                Value /= 1024;
-                                Value_Unit = "Gigabyte";
-                            }
-                        }
-                    }
-                    if (Maximum >= 1024)
-                    {
-                        Maximum /= 1024;
-                        Maximum_Unit = "Kilobytes";
-                        if (Maximum >= 1024)
-                        {
-                            Maximum /= 1024;
-                            Maximum_Unit = "Megabytes";
-                            if (Maximum >= 1024)
-                            {
-                                Maximum /= 1024;
-                                Maximum_Unit = "Gigabyte";
-                            }
-                        }
-                    }
-                    Console.Title = $"{name} - Downloading - {Value} {Value_Unit} of {Maximum} {Maximum_Unit} - {Percent}%";
-                }))
-                {
-                    Console.Title = $"{name} - Download - Done";
-                    SetWallpaper(name, path);
-                }
+                Console.WriteLine($"\r\n\r\nError: {e.Message}\r\n{e.StackTrace}\r\n\r\n");
+                File.WriteAllText($"{DateTime.Now.Ticks}.log", e.StackTrace);
+                Console.Write("点击任意键退出..");
+                _ = Console.ReadKey(true);
             }
         }
-
-        private static void SetWallpaper(string name, string file)
-        {
-            Console.Title = $"{name} - Set Wallpaper";
-            Console.WriteLine($"[Set Wallpaper]\nFile={file}");
-            SystemParametersInfo(20, 0, file, 0x2);
-            Console.Title = $"{name} - Set Wallpaper - Done";
-        }
-
-        /// <summary>
-        /// 取XML项目值
-        /// </summary>
-        /// <param name="XML">XML文本</param>
-        /// <param name="item">项目名称</param>
-        /// <returns></returns>
-        public static string GetXMLItemValue(string XML, string item)
-        {
-            string text = XML;
-            if (string.IsNullOrEmpty(text))
-            {
-                return "";
-            }
-
-            if (string.IsNullOrEmpty(item))
-            {
-                return "";
-            }
-
-            string left = $"<{item}>";
-            string right = $"</{item}>";
-
-            int Lindex = text.IndexOf(left);
-
-            if (Lindex == -1)
-            {
-                return "";
-            }
-
-            Lindex += left.Length;
-
-            int Rindex = text.IndexOf(right, Lindex);
-
-            if (Rindex == -1)
-            {
-                return "";
-            }
-
-            return text[Lindex..Rindex];
-        }
-
-        public static bool DownLoadFile(string URL, string Filename, Action<double, double, double> updateProgress = null)
-        {
-            Console.Title = $"Bing Wallpaper - Download";
-            Console.WriteLine($"[Download]\nUrl={URL}\nPath={Filename}");
-            Stream st = null;
-            Stream so = null;
-            System.Net.HttpWebRequest Myrq = null;
-            System.Net.HttpWebResponse myrp = null;
-            bool flag = false;
-            try
-            {
-                Myrq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(URL); //从URL地址得到一个WEB请求     
-                myrp = (System.Net.HttpWebResponse)Myrq.GetResponse(); //从WEB请求得到WEB响应     
-                long totalBytes = myrp.ContentLength; //从WEB响应得到总字节数
-                if (File.Exists(Filename) && (int)totalBytes == File.ReadAllBytes(Filename).Length)
-                {
-                    return true;
-                }
-                updateProgress?.Invoke((int)totalBytes, 0, 0);//从总字节数得到进度条的最大值  
-                st = myrp.GetResponseStream(); //从WEB请求创建流（读）     
-                so = new System.IO.FileStream(Filename, System.IO.FileMode.Create); //创建文件流（写）     
-                long totalDownloadedByte = 0; //下载文件大小     
-                byte[] by = new byte[1024];
-                int osize = st.Read(by, 0, by.Length); //读流     
-                while (osize > 0)
-                {
-                    totalDownloadedByte = osize + totalDownloadedByte; //更新文件大小     
-                    //Application.DoEvents();
-                    so.Write(by, 0, osize); //写流     
-                    updateProgress?.Invoke((int)totalBytes, (int)totalDownloadedByte, (double)totalDownloadedByte / totalBytes * 100);//更新进度条 
-                    osize = st.Read(by, 0, by.Length); //读流     
-                }
-                //更新进度
-                updateProgress?.Invoke((int)totalBytes, (int)totalDownloadedByte, (double)totalDownloadedByte / totalBytes * 100);
-                flag = true;
-            }
-            catch (Exception)
-            {
-                flag = false;
-                throw;
-            }
-            finally
-            {
-                if (Myrq != null)
-                {
-                    Myrq.Abort();//销毁关闭连接
-                }
-                if (myrp != null)
-                {
-                    myrp.Close();//销毁关闭响应
-                }
-                if (so != null)
-                {
-                    so.Close(); //关闭流 
-                }
-                if (st != null)
-                {
-                    st.Close(); //关闭流  
-                }
-            }
-            return flag;
-        }
-
-        /// <summary>
-        /// 系统参数信息
-        /// </summary>
-        /// <param name="uAction">20</param>
-        /// <param name="uParam">0</param>
-        /// <param name="lpvParam">file</param>
-        /// <param name="fuWinIni">0x2</param>
-        /// <returns></returns>
-        [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
-        private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
     }
 }
