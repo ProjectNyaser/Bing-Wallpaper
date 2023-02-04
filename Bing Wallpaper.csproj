@@ -16,4 +16,8 @@
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="publish.exe" />
+  </ItemGroup>
+
 </Project>
