@@ -1,12 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-
-namespace Bing_Wallpaper
+﻿namespace Bing_Wallpaper
 {
     internal class Program
     {
@@ -49,7 +41,7 @@ namespace Bing_Wallpaper
                 stopwatch.Stop();
                 Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
                 stopwatch.Reset();
-                httpResponseMessage.EnsureSuccessStatusCode();
+                _ = httpResponseMessage.EnsureSuccessStatusCode();
 
                 Console.Write($"下    载：{Url}..");
                 stopwatch.Start();
@@ -57,7 +49,7 @@ namespace Bing_Wallpaper
                 stopwatch.Stop();
                 Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
                 stopwatch.Reset();
-                httpResponseMessage.EnsureSuccessStatusCode();
+                _ = httpResponseMessage.EnsureSuccessStatusCode();
 
                 Console.Write("分    析：Content..");
                 stopwatch.Start();
@@ -67,7 +59,7 @@ namespace Bing_Wallpaper
                                      where s != "" && !s.Contains('<') && !s.Contains('>')
                                      select s)
                 {
-                    fileName  = $"{s}.jpg";
+                    fileName = $"{s}.jpg";
                 }
                 foreach (string s in from string s in html.Split(new string[] { "<urlBase>", "</urlBase>" }, StringSplitOptions.None)
                                      where s != "" && !s.Contains('<') && !s.Contains('>')
@@ -85,7 +77,7 @@ namespace Bing_Wallpaper
                 stopwatch.Stop();
                 Console.WriteLine($"{httpResponseMessage.EnsureSuccessStatusCode().StatusCode} ({stopwatch.ElapsedMilliseconds} ms)");
                 stopwatch.Reset();
-                httpResponseMessage.EnsureSuccessStatusCode();
+                _ = httpResponseMessage.EnsureSuccessStatusCode();
 
                 httpClient.Dispose();
 

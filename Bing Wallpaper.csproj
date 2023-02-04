@@ -4,12 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <DebugType>embedded</DebugType>
-    <PackageId></PackageId>
-    <Authors></Authors>
     <AnalysisLevel>6.0</AnalysisLevel>
-    <Version />
-    <Company />
-    <Product />
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <SignAssembly>False</SignAssembly>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -22,4 +17,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>portable</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Runtime.InteropServices" />
+  </ItemGroup>
 </Project>
