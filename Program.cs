@@ -10,14 +10,14 @@ namespace Bing_Wallpaper
         private static readonly HttpClient httpClient = new();
         private static readonly Stopwatch stopwatch = new();
 
-        public static async Task Main(string[] args_origin)
+        public static async Task Main(string[] args)
         {
-            string[] args = new string[args_origin.Length];
-            for (int i = 0; i < args_origin.Length; i++)
+            string[] args_lower = new string[args.Length];
+            for (int i = 0; i < args.Length; i++)
             {
-                args[i] = args_origin[i];
+                args_lower[i] = args[i];
             }
-            if (args.Contains("-m", "--minimize"))
+            if (args_lower.Contains("-m", "--minimize"))
             {
                 _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_MINIMIZE);
             }
