@@ -12,7 +12,7 @@ namespace Bing_Wallpaper
 
         public static async Task Main(string[] args_origin)
         {
-            string[] args = new string[args_origin.Length - 1];
+            string[] args = new string[args_origin.Length];
             for (int i = 0; i < args_origin.Length; i++)
             {
                 args[i] = args_origin[i];
