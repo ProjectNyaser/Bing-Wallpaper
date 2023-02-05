@@ -125,13 +125,13 @@ namespace Bing_Wallpaper
                 string message = $"{e.Message}\r\n{e.StackTrace}";
                 Directory.CreateDirectory(logPath);
                 File.WriteAllText(logPath+=$"{DateTime.Now.Ticks}.log", message);
-                Console.WriteLine($"\r\n\r\n抛出异常：{message}\r\n保存日志：{logPath}\r\n\r\n");
+                Console.WriteLine($"\r\n\r\n抛出异常：{message}\r\n保存日志：{logPath}\r\n");
             }
             finally
             {
                 if (pauseBeforeExiting)
                 {
-                    Console.Write("点击 Enter 或 Ctrl + C 退出..");
+                    Console.Write("\r\n点击 Enter 或 Ctrl + C 退出..");
                     _ = Console.ReadLine();
                 }
             }
