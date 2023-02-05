@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using System.Linq;
 
 namespace Bing_Wallpaper
 {
@@ -9,28 +10,16 @@ namespace Bing_Wallpaper
         private static readonly HttpClient httpClient = new();
         private static readonly Stopwatch stopwatch = new();
 
-        [DllImport("User32.dll")]
-        public static extern int ShowWindow(int hwnd, int nCmdShow);
-        [DllImport("User32.dll", CharSet = CharSet.Unicode)]
-        public static extern int FindWindow(string lpClassName, string lpWindowName);
-        private const int SW_HIDE = 0;
-        private const int SW_NORMAL = 1;
-        private const int SW_MAXIMIZE = 3;
-        private const int SW_SHOWNOACTIVATE = 4;
-        private const int SW_SHOW = 5;
-        private const int SW_MINIMIZE = 6;
-        private const int SW_RESTORE = 9;
-        private const int SW_SHOWDEFAULT = 10;
-
-        public static async Task Main(string[] args)
+        public static async Task Main(string[] args_origin)
         {
-            foreach (string arg in args)
+            string[] args = new string[args_origin.Length - 1];
+            for (int i = 0; i < args_origin.Length; i++)
             {
-                if (arg.ToLower() is "-m" or "--minimize")
-                {
-                    _ = ShowWindow(FindWindow(null, Console.Title), SW_MINIMIZE);
-                    break;
-                }
+                args[i] = args_origin[i];
+            }
+            if (args.Contains("-m", "--minimize"))
+            {
+                _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_MINIMIZE);
             }
 
             string address = "";
@@ -128,12 +117,45 @@ namespace Bing_Wallpaper
             }
             catch (Exception e)
             {
-                _ = ShowWindow(FindWindow(null, Console.Title), SW_RESTORE);
+                _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_RESTORE);
                 Console.WriteLine($"\r\n\r\nError: {e.Message}\r\n{e.StackTrace}\r\n\r\n");
                 File.WriteAllText($"{DateTime.Now.Ticks}.log", e.StackTrace);
                 Console.Write("点击任意键退出..");
                 _ = Console.ReadKey(true);
             }
+        }
+    }
+
+    internal static class WindowHelpers
+    {
+        public const int SW_HIDE = 0;
+        public const int SW_NORMAL = 1;
+        public const int SW_MAXIMIZE = 3;
+        public const int SW_SHOWNOACTIVATE = 4;
+        public const int SW_SHOW = 5;
+        public const int SW_MINIMIZE = 6;
+        public const int SW_RESTORE = 9;
+        public const int SW_SHOWDEFAULT = 10;
+        [DllImport("User32.dll", CharSet = CharSet.Unicode)]
+        public static extern int FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("User32.dll")]
+        public static extern int ShowWindow(int hwnd, int nCmdShow);
+    }
+
+    public static class Extensions
+    {
+        public static bool Contains(this Array array, params object[] values)
+        {
+            foreach (var _ in from object value in values
+                              from object item in array
+                              where Equals(item, value)
+                              select new { })
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
