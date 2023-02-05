@@ -118,8 +118,11 @@ namespace Bing_Wallpaper
             catch (Exception e)
             {
                 _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_RESTORE);
-                Console.WriteLine($"\r\n\r\n抛出错误：{e.Message}\r\n{e.StackTrace}\r\n\r\n");
-                File.WriteAllText($"{DateTime.Now.Ticks}.log", $"{e.Message}\r\n{e.StackTrace}");
+                string logPath = $@"{Directory.GetCurrentDirectory()}\Logs\";
+                string message = $"{e.Message}\r\n{e.StackTrace}";
+                Directory.CreateDirectory(logPath);
+                File.WriteAllText(logPath+=$"{DateTime.Now.Ticks}.log", message);
+                Console.WriteLine($"\r\n\r\n抛出异常：{message}\r\n保存日志：{logPath}\r\n\r\n");
                 Console.Write("点击任意键退出..");
                 _ = Console.ReadKey(true);
             }
