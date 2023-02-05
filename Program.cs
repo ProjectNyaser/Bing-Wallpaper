@@ -13,6 +13,7 @@ namespace Bing_Wallpaper
         public static async Task Main(string[] args)
         {
             string[] args_lower = new string[args.Length];
+            bool pauseBeforeExiting = false;
             for (int i = 0; i < args.Length; i++)
             {
                 args_lower[i] = args[i];
@@ -20,6 +21,9 @@ namespace Bing_Wallpaper
             if (args_lower.Contains("-m", "--minimize"))
             {
                 _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_MINIMIZE);
+            } else if (args_lower.Contains("-k", "--keep"))
+            {
+                pauseBeforeExiting = true;
             }
 
             string address = "";
@@ -35,9 +39,7 @@ namespace Bing_Wallpaper
             Console.WriteLine(SaveFolder);
             if (!Directory.CreateDirectory(SaveFolder).Exists)
             {
-                Console.Write("创建目录失败，点击任意键退出..");
-                _ = Console.ReadKey(true);
-                return;
+                throw new($"创建目录 {SaveFolder} 失败");
             }
             try
             {
@@ -117,14 +119,21 @@ namespace Bing_Wallpaper
             }
             catch (Exception e)
             {
+                pauseBeforeExiting = true;
                 _ = WindowHelpers.ShowWindow(WindowHelpers.FindWindow(null, Console.Title), WindowHelpers.SW_RESTORE);
                 string logPath = $@"{Directory.GetCurrentDirectory()}\Logs\";
                 string message = $"{e.Message}\r\n{e.StackTrace}";
                 Directory.CreateDirectory(logPath);
                 File.WriteAllText(logPath+=$"{DateTime.Now.Ticks}.log", message);
                 Console.WriteLine($"\r\n\r\n抛出异常：{message}\r\n保存日志：{logPath}\r\n\r\n");
-                Console.Write("点击任意键退出..");
-                _ = Console.ReadKey(true);
+            }
+            finally
+            {
+                if (pauseBeforeExiting)
+                {
+                    Console.Write("点击 Enter 或 Ctrl + C 退出..");
+                    _ = Console.ReadLine();
+                }
             }
         }
     }
